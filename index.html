@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MJ's Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #E86F2A;
+            --orange-dark: #D4853A;
+            --yellow-cream: #F5E6C8;
+            --pink: #F8C8D4;
+            --pink-light: #FDF2F5;
+            --white: #FFFFFF;
+            --dark: #2D2D2D;
+            --gray: #6B6B6B;
+            --gray-light: #F7F7F7;
+            --border: #E8E8E8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'DM Sans', sans-serif; 
+            background: var(--white);
+            min-height: 100vh; 
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+        /* Header */
+        header {
+            margin-bottom: 32px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        h1 { 
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem; 
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--gray-light);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--gray);
+        }
+
+        .sync-status.connected { background: #E8F5E9; color: #2E7D32; }
+        .sync-status.syncing { background: var(--yellow-cream); color: var(--orange-dark); }
+        .sync-status.error { background: #FFEBEE; color: #C62828; }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .sync-status.syncing .sync-dot { animation: pulse 1s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .settings-btn {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            color: var(--dark);
+            transition: all 0.2s ease;
+        }
+
+        .settings-btn:hover { background: var(--gray-light); }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
+            min-width: 140px;
+        }
+
+        .stat-card.highlight { background: var(--pink-light); border-color: var(--pink); }
+        .stat-card.warning { background: #FFF3E0; border-color: var(--orange); }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* Section Headers */
+        .section-header {
+            background: var(--pink);
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Quick Add */
+        .quick-add {
+            background: var(--yellow-cream);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .quick-add-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .quick-add input[type="text"] {
+            flex: 1;
+            min-width: 240px;
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--white);
+        }
+
+        .quick-add input[type="text"]:focus { 
+            outline: none; 
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(232, 111, 42, 0.1);
+        }
+
+        .quick-add input[type="date"] {
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--white);
+        }
+
+        .quick-add select {
+            padding: 14px 18px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--white);
+            cursor: pointer;
+        }
+
+        .quick-add select:focus {
+            outline: none;
+            border-color: var(--orange);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--orange);
+            color: var(--white);
+        }
+
+        .btn-primary:hover { background: #D4631F; }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: var(--gray-light); }
+
+        /* View Toggle & Filters */
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--gray-light);
+            padding: 4px;
+            border-radius: 10px;
+        }
+
+        .view-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--gray);
+            transition: all 0.2s ease;
+        }
+
+        .view-btn:hover { color: var(--dark); }
+        .view-btn.active { 
+            background: var(--white); 
+            color: var(--dark);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .filters {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray);
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--gray);
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover { border-color: var(--orange); color: var(--orange); }
+        .filter-btn.active { 
+            background: var(--orange); 
+            color: var(--white);
+            border-color: var(--orange);
+        }
+
+        .tag-filter-select {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            background: var(--white);
+            cursor: pointer;
+        }
+
+        /* Email Inbox Banner */
+        .email-inbox-section {
+            background: linear-gradient(135deg, var(--orange) 0%, var(--orange-dark) 100%);
+            color: var(--white);
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .email-inbox-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .email-inbox-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .email-count {
+            background: var(--white);
+            color: var(--orange);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .email-refresh-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .email-refresh-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .email-task-list {
+            margin-top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .email-task-item {
+            background: var(--white);
+            color: var(--dark);
+            padding: 16px;
+            border-radius: 10px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .email-task-content { flex: 1; }
+        .email-task-subject { font-weight: 600; margin-bottom: 4px; }
+        .email-task-from { font-size: 0.8rem; color: var(--gray); margin-bottom: 6px; }
+        .email-task-snippet { font-size: 0.85rem; color: var(--gray); }
+
+        .email-task-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+        .email-action-btn {
+            padding: 8px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--gray-light);
+            color: var(--dark);
+        }
+
+        .email-action-btn:hover { background: var(--orange); color: white; border-color: var(--orange); }
+        .email-action-btn.dismiss:hover { background: #EF5350; border-color: #EF5350; }
+
+        /* Tag View Banner */
+        .tag-view-section {
+            background: var(--yellow-cream);
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .tag-view-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .tag-view-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tag-view-count {
+            background: var(--orange);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .clear-filter-btn {
+            margin-left: auto;
+            padding: 8px 16px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .clear-filter-btn:hover { background: var(--gray-light); }
+
+        /* Partners Grid */
+        .partners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .partner-section {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .partner-header {
+            padding: 16px 24px;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .partner-header .task-count {
+            background: var(--gray-light);
+            color: var(--gray);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .haven .partner-header { background: var(--pink-light); }
+        .haven .partner-header .task-count { background: var(--pink); color: var(--dark); }
+
+        .bonclub .partner-header { background: #FFF3E0; }
+        .bonclub .partner-header .task-count { background: var(--orange); color: white; }
+
+        .admin .partner-header { background: var(--yellow-cream); }
+        .admin .partner-header .task-count { background: var(--orange-dark); color: white; }
+
+        .project-section { border-bottom: 1px solid var(--border); }
+        .project-section:last-child { border-bottom: none; }
+
+        .project-header {
+            padding: 12px 24px;
+            background: var(--gray-light);
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .deliverable-section {
+            padding: 12px 24px;
+            border-left: 3px solid transparent;
+        }
+
+        .deliverable-section.has-tasks { border-left-color: var(--orange); }
+
+        .deliverable-name {
+            font-size: 0.75rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tasks-list { list-style: none; }
+
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-item:last-child { border-bottom: none; }
+
+        .task-item.from-email {
+            background: linear-gradient(90deg, rgba(232,111,42,0.08) 0%, transparent 100%);
+            margin: 0 -24px;
+            padding: 12px 24px;
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--white);
+        }
+
+        .task-checkbox:hover { border-color: var(--orange); }
+        .task-checkbox.checked { 
+            background: var(--orange); 
+            border-color: var(--orange);
+        }
+        .task-checkbox.checked::after { 
+            content: '✓'; 
+            color: white; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+
+        .task-content { flex: 1; min-width: 0; }
+
+        .task-text { 
+            font-size: 0.95rem; 
+            font-weight: 500; 
+            line-height: 1.5;
+            color: var(--dark);
+        }
+
+        .task-item.completed .task-text { 
+            text-decoration: line-through; 
+            color: var(--gray); 
+        }
+
+        .task-meta { 
+            display: flex; 
+            gap: 8px; 
+            margin-top: 8px; 
+            flex-wrap: wrap; 
+            align-items: center; 
+        }
+
+        .priority-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+
+        .priority-high { background: #EF5350; }
+        .priority-medium { background: var(--orange); }
+        .priority-low { background: #66BB6A; }
+
+        .task-due {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            font-weight: 600;
+            border-radius: 6px;
+            background: var(--gray-light);
+            color: var(--gray);
+        }
+
+        .task-due.overdue { background: #FFEBEE; color: #C62828; }
+        .task-due.due-soon { background: #FFF3E0; color: var(--orange-dark); }
+
+        .task-tag {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            font-weight: 600;
+            border-radius: 6px;
+            background: var(--gray-light);
+            color: var(--gray);
+        }
+
+        .task-tag.from-email { background: var(--orange); color: white; }
+
+        .focus-indicator {
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            font-weight: 600;
+            border-radius: 6px;
+            background: var(--pink);
+            color: var(--dark);
+        }
+
+        .task-source {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+
+        .delete-task {
+            opacity: 0;
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px 8px;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover .delete-task { opacity: 1; }
+        .delete-task:hover { color: #EF5350; }
+
+        /* Today View */
+        .today-view { display: none; }
+        .today-view.active { display: block; }
+
+        .today-section {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .today-section h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .section-dot.overdue { background: #EF5350; }
+        .section-dot.high { background: var(--pink); }
+        .section-dot.medium { background: var(--orange); }
+        .section-dot.low { background: #66BB6A; }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .modal-tab {
+            padding: 10px 20px;
+            background: var(--gray-light);
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-tab.active { background: var(--orange); color: white; }
+
+        .modal-section { margin-bottom: 24px; }
+
+        .modal-section h3 {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .modal input, .modal textarea, .modal select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'DM Sans', sans-serif;
+            margin-bottom: 8px;
+            background: var(--white);
+        }
+
+        .modal textarea {
+            min-height: 150px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .modal input:focus, .modal textarea:focus, .modal select:focus { 
+            outline: none; 
+            border-color: var(--orange);
+        }
+
+        .modal-actions { 
+            display: flex; 
+            gap: 12px; 
+            justify-content: flex-end; 
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .structure-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--gray-light);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .structure-item button {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .structure-item button:hover { color: #EF5350; }
+
+        .add-inline { display: flex; gap: 8px; }
+        .add-inline input { flex: 1; margin-bottom: 0; }
+        .add-inline button {
+            padding: 12px 20px;
+            background: var(--orange);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .add-inline button:hover { background: #D4631F; }
+
+        .template-item, .tag-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: var(--gray-light);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .template-item:hover { background: var(--yellow-cream); }
+
+        .template-item-info { flex: 1; }
+        .template-item-name { font-weight: 600; margin-bottom: 2px; }
+        .template-item-count { font-size: 0.8rem; color: var(--gray); }
+
+        .template-item-actions button, .tag-item button {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+        }
+
+        .template-item-actions button:hover, .tag-item button:hover { color: #EF5350; }
+
+        .tag-item-info { display: flex; align-items: center; gap: 12px; }
+
+        .sync-setup-box {
+            background: var(--gray-light);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .sync-setup-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .sync-setup-box p {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 12px;
+        }
+
+        .sync-url-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .sync-url-input input { flex: 1; margin-bottom: 0; }
+
+        .template-preview {
+            background: var(--gray-light);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 16px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .template-preview-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .template-preview-item:last-child { border-bottom: none; }
+
+        .focus-badge {
+            background: var(--pink);
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .batch-help {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--yellow-cream);
+            border-radius: 8px;
+        }
+
+        .batch-help code {
+            background: var(--white);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .email-preview-box {
+            background: var(--gray-light);
+            border-radius: 10px;
+            overflow: hidden;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .email-preview-header {
+            padding: 12px 16px;
+            background: var(--yellow-cream);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .email-preview-header strong {
+            display: block;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .email-preview-header span {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .email-preview-content {
+            padding: 16px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            color: var(--dark);
+        }
+
+        .apply-template-section {
+            background: var(--gray-light);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .apply-template-section h4 {
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .partners-grid { grid-template-columns: 1fr; }
+            .quick-add-row { flex-direction: column; }
+            .quick-add input[type="text"], .quick-add select, .btn { width: 100%; }
+            h1 { font-size: 1.8rem; }
+            .controls-row { flex-direction: column; align-items: stretch; }
+            .filters { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1>MJ's Planner</h1>
+                <div class="header-actions">
+                    <div class="sync-status" id="syncStatus">
+                        <div class="sync-dot"></div>
+                        <span id="syncStatusText">Not connected</span>
+                    </div>
+                    <button class="settings-btn" onclick="openModal()">Settings</button>
+                </div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalTasks">0</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-number" id="urgentTasks">0</div>
+                    <div class="stat-label">Urgent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="overdueTasks">0</div>
+                    <div class="stat-label">Overdue</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-number" id="completedToday">0</div>
+                    <div class="stat-label">Done Today</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Email Inbox Section -->
+        <div id="emailInboxSection" class="email-inbox-section">
+            <div class="email-inbox-header">
+                <h2>📧 Email Inbox <span class="email-count" id="emailCount">0</span></h2>
+                <button class="email-refresh-btn" onclick="refreshEmails()">↻ Refresh</button>
+            </div>
+            <div class="email-task-list" id="emailTaskList"></div>
+        </div>
+
+        <div class="quick-add">
+            <div class="quick-add-row">
+                <input type="text" id="newTaskInput" placeholder="What needs to be done?" onkeypress="if(event.key==='Enter')addTask()">
+                <select id="projectSelect"></select>
+                <select id="prioritySelect">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">Urgent</option>
+                </select>
+                <input type="date" id="dueDateInput">
+                <select id="tagSelect">
+                    <option value="">Tag</option>
+                </select>
+                <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+                <button class="btn btn-secondary" onclick="openTemplateModal()">+ Template</button>
+            </div>
+        </div>
+
+        <div class="controls-row">
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="setView('projects')">By Project</button>
+                <button class="view-btn" onclick="setView('today')">Focus</button>
+                <button class="view-btn" onclick="setView('all')">All Tasks</button>
+            </div>
+            <div class="filters">
+                <span class="filter-label">Filter:</span>
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" data-filter="high" onclick="setFilter('high')">Urgent</button>
+                <button class="filter-btn" data-filter="incomplete" onclick="setFilter('incomplete')">Active</button>
+                <button class="filter-btn" data-filter="focus" onclick="setFilter('focus')">Focus</button>
+                <select class="tag-filter-select" id="tagFilterSelect" onchange="setTagFilter(this.value)">
+                    <option value="">All Tags</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="tagViewBanner" class="tag-view-section">
+            <div class="tag-view-header">
+                <span id="tagViewIcon" style="font-size: 1.2rem;">📧</span>
+                <h2 id="tagViewTitle">Email Tasks</h2>
+                <span class="tag-view-count" id="tagViewCount">0 tasks</span>
+                <button class="clear-filter-btn" onclick="clearTagFilter()">× Clear Filter</button>
+            </div>
+        </div>
+
+        <div id="projectsView" class="partners-grid"></div>
+
+        <div id="todayView" class="today-view">
+            <div class="today-section">
+                <h2><span class="section-dot overdue"></span> Overdue</h2>
+                <div id="todayOverdue"></div>
+            </div>
+            <div class="today-section">
+                <h2><span class="section-dot high"></span> High Priority</h2>
+                <div id="todayHigh"></div>
+            </div>
+            <div class="today-section">
+                <h2><span class="section-dot medium"></span> Medium Priority</h2>
+                <div id="todayMedium"></div>
+            </div>
+            <div class="today-section">
+                <h2><span class="section-dot low"></span> Low Priority</h2>
+                <div id="todayLow"></div>
+            </div>
+        </div>
+
+        <div id="allView" class="today-view">
+            <div class="today-section">
+                <h2>All Tasks</h2>
+                <div id="allTasksList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+            <h2>Settings</h2>
+            <div class="modal-tabs">
+                <button class="modal-tab active" onclick="setModalTab('projects')">Projects</button>
+                <button class="modal-tab" onclick="setModalTab('tags')">Tags</button>
+                <button class="modal-tab" onclick="setModalTab('templates')">Templates</button>
+                <button class="modal-tab" onclick="setModalTab('sync')">Email Sync</button>
+            </div>
+            <div id="projectsTab"><div id="structureEditor"></div></div>
+            <div id="tagsTab" style="display: none;">
+                <div class="modal-section">
+                    <h3>Your Tags</h3>
+                    <div id="tagsEditor"></div>
+                    <div class="add-inline" style="margin-top: 12px;">
+                        <input type="text" id="newTagName" placeholder="Tag name">
+                        <input type="text" id="newTagIcon" placeholder="Emoji" style="width: 80px; flex: none;">
+                        <button onclick="addTag()">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div id="templatesTab" style="display: none;">
+                <div class="modal-section">
+                    <h3>Project Templates</h3>
+                    <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 16px;">Create reusable task lists for common project types.</p>
+                    <div id="templatesEditor"></div>
+                    <button class="btn btn-primary" onclick="openCreateTemplateModal()" style="margin-top: 12px;">+ New Template</button>
+                </div>
+            </div>
+            <div id="syncTab" style="display: none;">
+                <div class="modal-section">
+                    <h3>Google Sheets Sync</h3>
+                    <p style="font-size: 0.85rem; color: var(--gray); margin-bottom: 16px;">Connect to a Google Sheet to receive tasks from forwarded emails.</p>
+                    <div class="sync-setup-box">
+                        <h4>Your Google Sheet URL</h4>
+                        <p>Paste the Web App URL from your Google Apps Script deployment:</p>
+                        <div class="sync-url-input">
+                            <input type="text" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/...">
+                            <button class="btn btn-primary" onclick="connectSheet()">Connect</button>
+                        </div>
+                    </div>
+                    <div id="syncConnectedInfo" style="display: none;">
+                        <div class="structure-item" style="background: #E8F5E9;">
+                            <span>✓ Connected to Google Sheet</span>
+                            <button onclick="disconnectSheet()">Disconnect</button>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--gray); margin-top: 12px;">
+                            <strong>How to send emails to your planner:</strong><br>
+                            Forward any email to yourself with <code style="background: var(--yellow-cream); padding: 2px 6px; border-radius: 4px;">+task</code> in the subject line.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create/Edit Template Modal -->
+    <div class="modal-overlay" id="templateEditModal" onclick="if(event.target===this)closeTemplateEditModal()">
+        <div class="modal">
+            <h2 id="templateEditTitle">New Template</h2>
+            <div class="modal-section">
+                <h3>Template Name</h3>
+                <input type="text" id="templateName" placeholder="e.g., Small Social Strategy">
+            </div>
+            <div class="modal-section">
+                <h3>Tasks (one per line)</h3>
+                <textarea id="templateTasks" placeholder="Enter tasks, one per line..."></textarea>
+                <div class="batch-help">
+                    <strong>Tip:</strong> Add <code>**</code> at the end of a task to mark it as high-focus.
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeTemplateEditModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apply Template Modal -->
+    <div class="modal-overlay" id="applyTemplateModal" onclick="if(event.target===this)closeApplyTemplateModal()">
+        <div class="modal">
+            <h2>Add Tasks from Template</h2>
+            <div class="apply-template-section">
+                <h4>Select Deliverable</h4>
+                <select id="applyTemplateProject"></select>
+            </div>
+            <div class="apply-template-section">
+                <h4>Select Template</h4>
+                <div id="templateSelectList"></div>
+            </div>
+            <div id="templatePreviewSection" style="display: none;">
+                <h4 style="font-size: 0.85rem; margin-bottom: 12px; font-weight: 600;">Preview</h4>
+                <div class="template-preview" id="templatePreview"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeApplyTemplateModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="applySelectedTemplate()">Add Tasks</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Convert Email Modal -->
+    <div class="modal-overlay" id="convertEmailModal" onclick="if(event.target===this)closeConvertEmailModal()">
+        <div class="modal" style="max-width: 700px;">
+            <h2>Convert Email to Task</h2>
+            
+            <!-- Email Content Preview -->
+            <div class="modal-section">
+                <h3>Email Details</h3>
+                <div class="email-preview-box">
+                    <div class="email-preview-header">
+                        <strong id="emailPreviewSubject"></strong>
+                        <span id="emailPreviewFrom"></span>
+                    </div>
+                    <div class="email-preview-content" id="emailPreviewContent"></div>
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h3>Task Title</h3>
+                <input type="text" id="emailTaskTitle">
+            </div>
+            <div class="modal-section">
+                <h3>Assign to</h3>
+                <select id="emailTaskProject"></select>
+            </div>
+            <div class="modal-section">
+                <h3>Priority</h3>
+                <select id="emailTaskPriority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">Urgent</option>
+                </select>
+            </div>
+            <input type="hidden" id="convertingEmailId">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeConvertEmailModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmConvertEmail()">Create Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let data = {
+            partners: [
+                { id: 'haven', name: 'Haven Studio', color: 'haven', projects: [
+                    { id: 'rubino', name: 'Rubino', deliverables: [
+                        { id: 'playbook', name: 'Social Media Playbook' },
+                        { id: 'content', name: 'Content Creation' },
+                        { id: 'strategy', name: 'Strategy' }
+                    ]}
+                ]},
+                { id: 'bonclub', name: 'Bonclub', color: 'bonclub', projects: [
+                    { id: 'vanhoutte', name: 'Van Houtte', deliverables: [
+                        { id: 'campaign', name: 'Campaign' },
+                        { id: 'social', name: 'Social Media' }
+                    ]}
+                ]},
+                { id: 'admin', name: 'Admin', color: 'admin', projects: [
+                    { id: 'business', name: 'Business', deliverables: [
+                        { id: 'invoices', name: 'Invoices' },
+                        { id: 'taxes', name: 'Taxes' },
+                        { id: 'linkedin', name: 'LinkedIn' }
+                    ]}
+                ]}
+            ],
+            tags: [
+                { id: 'email', name: 'Email', icon: '📧' },
+                { id: 'call', name: 'Call', icon: '📞' },
+                { id: 'review', name: 'Review', icon: '👀' },
+                { id: 'meeting', name: 'Meeting', icon: '🤝' },
+                { id: 'writing', name: 'Writing', icon: '✍️' }
+            ],
+            templates: [
+                {
+                    id: 'small-social-strategy',
+                    name: 'Small Social Strategy',
+                    tasks: [
+                        { text: 'Competitive landscape audit + best performing content analysis', focus: false },
+                        { text: 'Platform recommendations + rationale', focus: false },
+                        { text: 'Core audience Jobs to be Done framework', focus: true },
+                        { text: 'Content buckets with strategic rationale', focus: false },
+                        { text: '30-day content calendar blueprint', focus: false },
+                        { text: 'Key messaging guidelines + brand voice notes', focus: true },
+                        { text: '3-5 content examples/concepts', focus: false },
+                        { text: 'Success metrics to track', focus: false }
+                    ]
+                }
+            ],
+            tasks: [],
+            sheetUrl: 'https://script.google.com/macros/s/AKfycbxAlEZDEr1iPLwwDQIuar-XMm9BFqMFFjC5Ewnxk_epRNtdANFhGVkf2F1QWtK2ESTqjQ/exec',
+            pendingEmails: []
+        };
+
+        let currentView = 'projects', currentFilter = 'all', currentTagFilter = null;
+        let editingTemplateId = null, selectedTemplateId = null, syncInterval = null;
+
+        function loadData() { 
+            const saved = localStorage.getItem('mjTaskData_v9'); 
+            if (saved) data = JSON.parse(saved); 
+            // Always ensure the sheet URL is set
+            if (!data.sheetUrl) {
+                data.sheetUrl = 'https://script.google.com/macros/s/AKfycbxAlEZDEr1iPLwwDQIuar-XMm9BFqMFFjC5Ewnxk_epRNtdANFhGVkf2F1QWtK2ESTqjQ/exec';
+                saveData();
+            }
+            if (data.sheetUrl) {
+                updateSyncStatus('connected');
+                document.getElementById('sheetUrlInput').value = data.sheetUrl;
+                document.getElementById('syncConnectedInfo').style.display = 'block';
+                startSync();
+            }
+        }
+        function saveData() { localStorage.setItem('mjTaskData_v9', JSON.stringify(data)); }
+        function generateId() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+
+        function updateSyncStatus(status, text) {
+            const el = document.getElementById('syncStatus');
+            const textEl = document.getElementById('syncStatusText');
+            el.className = 'sync-status ' + status;
+            textEl.textContent = text || (status === 'connected' ? 'Connected' : status === 'syncing' ? 'Syncing...' : status === 'error' ? 'Error' : 'Not connected');
+        }
+
+        function connectSheet() {
+            const url = document.getElementById('sheetUrlInput').value.trim();
+            if (!url) return alert('Please enter a Google Apps Script URL');
+            data.sheetUrl = url;
+            saveData();
+            updateSyncStatus('connected');
+            document.getElementById('syncConnectedInfo').style.display = 'block';
+            startSync();
+            refreshEmails();
+        }
+
+        function disconnectSheet() {
+            data.sheetUrl = null;
+            data.pendingEmails = [];
+            saveData();
+            updateSyncStatus('', 'Not connected');
+            document.getElementById('syncConnectedInfo').style.display = 'none';
+            document.getElementById('sheetUrlInput').value = '';
+            document.getElementById('emailInboxSection').style.display = 'none';
+            if (syncInterval) clearInterval(syncInterval);
+        }
+
+        function startSync() {
+            if (syncInterval) clearInterval(syncInterval);
+            refreshEmails();
+            syncInterval = setInterval(refreshEmails, 60000);
+        }
+
+        async function refreshEmails() {
+            if (!data.sheetUrl) return;
+            updateSyncStatus('syncing');
+            try {
+                const response = await fetch(data.sheetUrl + '?action=getPending');
+                const result = await response.json();
+                if (result.success) {
+                    data.pendingEmails = result.emails || [];
+                    saveData();
+                    renderEmailInbox();
+                    updateSyncStatus('connected');
+                } else {
+                    updateSyncStatus('error', 'Sync failed');
+                }
+            } catch (e) {
+                updateSyncStatus('error', 'Connection error');
+            }
+        }
+
+        function renderEmailInbox() {
+            const section = document.getElementById('emailInboxSection');
+            const list = document.getElementById('emailTaskList');
+            const count = document.getElementById('emailCount');
+            if (data.pendingEmails.length === 0) { section.style.display = 'none'; return; }
+            section.style.display = 'block';
+            count.textContent = data.pendingEmails.length;
+            list.innerHTML = data.pendingEmails.map(email => `
+                <div class="email-task-item">
+                    <div class="email-task-content">
+                        <div class="email-task-subject">${escapeHtml(email.subject)}</div>
+                        <div class="email-task-from">From: ${escapeHtml(email.from)}</div>
+                        <div class="email-task-snippet">${escapeHtml(email.snippet || '').substring(0, 120)}...</div>
+                    </div>
+                    <div class="email-task-actions">
+                        <button class="email-action-btn" onclick="convertEmailToTask('${email.id}')">Convert</button>
+                        <button class="email-action-btn dismiss" onclick="dismissEmail('${email.id}')">Dismiss</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function convertEmailToTask(emailId) {
+            const email = data.pendingEmails.find(e => e.id === emailId);
+            if (!email) return;
+            
+            // Populate email preview
+            document.getElementById('emailPreviewSubject').textContent = email.subject;
+            document.getElementById('emailPreviewFrom').textContent = 'From: ' + email.from;
+            document.getElementById('emailPreviewContent').textContent = email.snippet || 'No content available';
+            
+            document.getElementById('emailTaskTitle').value = email.subject;
+            document.getElementById('convertingEmailId').value = emailId;
+            const select = document.getElementById('emailTaskProject');
+            select.innerHTML = '';
+            data.partners.forEach(partner => {
+                partner.projects.forEach(project => {
+                    project.deliverables.forEach(deliverable => {
+                        select.innerHTML += `<option value="${partner.id}|${project.id}|${deliverable.id}">${partner.name} → ${project.name} → ${deliverable.name}</option>`;
+                    });
+                });
+            });
+            document.getElementById('convertEmailModal').classList.add('active');
+        }
+
+        function closeConvertEmailModal() { document.getElementById('convertEmailModal').classList.remove('active'); }
+
+        async function confirmConvertEmail() {
+            const emailId = document.getElementById('convertingEmailId').value;
+            const title = document.getElementById('emailTaskTitle').value.trim();
+            const [partnerId, projectId, deliverableId] = document.getElementById('emailTaskProject').value.split('|');
+            const priority = document.getElementById('emailTaskPriority').value;
+            if (!title) return;
+            data.tasks.push({
+                id: generateId(), text: title, partnerId, projectId, deliverableId, priority,
+                dueDate: null, tags: [], focus: false, fromEmail: true,
+                completed: false, createdAt: new Date().toISOString(), completedAt: null
+            });
+            data.pendingEmails = data.pendingEmails.filter(e => e.id !== emailId);
+            if (data.sheetUrl) { try { await fetch(data.sheetUrl + '?action=markProcessed&id=' + emailId); } catch (e) {} }
+            saveData();
+            closeConvertEmailModal();
+            renderEmailInbox();
+            render();
+        }
+
+        async function dismissEmail(emailId) {
+            data.pendingEmails = data.pendingEmails.filter(e => e.id !== emailId);
+            if (data.sheetUrl) { try { await fetch(data.sheetUrl + '?action=markProcessed&id=' + emailId); } catch (e) {} }
+            saveData();
+            renderEmailInbox();
+        }
+
+        function populateProjectSelect() {
+            const selects = [document.getElementById('projectSelect'), document.getElementById('applyTemplateProject')];
+            selects.forEach(select => {
+                if (!select) return;
+                select.innerHTML = '';
+                data.partners.forEach(partner => {
+                    partner.projects.forEach(project => {
+                        project.deliverables.forEach(deliverable => {
+                            select.innerHTML += `<option value="${partner.id}|${project.id}|${deliverable.id}">${partner.name} → ${project.name} → ${deliverable.name}</option>`;
+                        });
+                    });
+                });
+            });
+        }
+
+        function populateTagSelects() {
+            const addSelect = document.getElementById('tagSelect');
+            const filterSelect = document.getElementById('tagFilterSelect');
+            addSelect.innerHTML = '<option value="">Tag</option>';
+            filterSelect.innerHTML = '<option value="">All Tags</option>';
+            data.tags.forEach(tag => {
+                addSelect.innerHTML += `<option value="${tag.id}">${tag.icon} ${tag.name}</option>`;
+                filterSelect.innerHTML += `<option value="${tag.id}">${tag.icon} ${tag.name}</option>`;
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('newTaskInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const [partnerId, projectId, deliverableId] = document.getElementById('projectSelect').value.split('|');
+            const selectedTag = document.getElementById('tagSelect').value;
+            data.tasks.push({
+                id: generateId(), text, partnerId, projectId, deliverableId,
+                priority: document.getElementById('prioritySelect').value,
+                dueDate: document.getElementById('dueDateInput').value || null,
+                tags: selectedTag ? [selectedTag] : [],
+                focus: false, fromEmail: false,
+                completed: false, createdAt: new Date().toISOString(), completedAt: null
+            });
+            saveData();
+            input.value = '';
+            document.getElementById('dueDateInput').value = '';
+            document.getElementById('tagSelect').value = '';
+            render();
+        }
+
+        function toggleTask(taskId) {
+            const task = data.tasks.find(t => t.id === taskId);
+            if (task) { task.completed = !task.completed; task.completedAt = task.completed ? new Date().toISOString() : null; saveData(); render(); }
+        }
+
+        function deleteTask(taskId) { data.tasks = data.tasks.filter(t => t.id !== taskId); saveData(); render(); }
+
+        function isOverdue(task) {
+            if (!task.dueDate || task.completed) return false;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            return new Date(task.dueDate) < today;
+        }
+
+        function isDueSoon(task) {
+            if (!task.dueDate || task.completed || isOverdue(task)) return false;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            return Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24)) <= 2;
+        }
+
+        function formatDueDate(dateStr) {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+            const due = new Date(dateStr); due.setHours(0, 0, 0, 0);
+            if (due.getTime() === today.getTime()) return 'Today';
+            if (due.getTime() === tomorrow.getTime()) return 'Tomorrow';
+            return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function filterTasks(tasks) {
+            return tasks.filter(task => {
+                let passes = true;
+                if (currentFilter === 'high') passes = task.priority === 'high' && !task.completed;
+                else if (currentFilter === 'incomplete') passes = !task.completed;
+                else if (currentFilter === 'focus') passes = task.focus && !task.completed;
+                if (currentTagFilter) passes = passes && task.tags?.includes(currentTagFilter);
+                return passes;
+            });
+        }
+
+        function renderTaskItem(task, showSource = false) {
+            const partner = data.partners.find(p => p.id === task.partnerId);
+            const project = partner?.projects.find(p => p.id === task.projectId);
+            const overdue = isOverdue(task), dueSoon = isDueSoon(task);
+            const tagsHtml = (task.tags || []).map(tagId => {
+                const tag = data.tags.find(t => t.id === tagId);
+                return tag ? `<span class="task-tag">${tag.icon} ${tag.name}</span>` : '';
+            }).join('');
+            const dueDateHtml = task.dueDate ? `<span class="task-due ${overdue ? 'overdue' : ''} ${dueSoon ? 'due-soon' : ''}">${formatDueDate(task.dueDate)}</span>` : '';
+            const focusHtml = task.focus ? `<span class="focus-indicator">⭐ Focus</span>` : '';
+            const emailHtml = task.fromEmail ? `<span class="task-tag from-email">📧 Email</span>` : '';
+            return `<div class="task-item ${task.completed ? 'completed' : ''} ${task.fromEmail ? 'from-email' : ''}">
+                <div class="priority-indicator priority-${task.priority}"></div>
+                <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask('${task.id}')"></div>
+                <div class="task-content">
+                    <div class="task-text">${task.text}</div>
+                    <div class="task-meta">${focusHtml}${emailHtml}${dueDateHtml}${tagsHtml}${showSource ? `<span class="task-source">${partner?.name} → ${project?.name}</span>` : ''}</div>
+                </div>
+                <button class="delete-task" onclick="deleteTask('${task.id}')">×</button>
+            </div>`;
+        }
+
+        function renderProjectsView() {
+            const container = document.getElementById('projectsView');
+            container.innerHTML = '';
+            data.partners.forEach(partner => {
+                const partnerTasks = filterTasks(data.tasks.filter(t => t.partnerId === partner.id));
+                const incompleteTasks = partnerTasks.filter(t => !t.completed);
+                let projectsHTML = '';
+                partner.projects.forEach(project => {
+                    let deliverablesHTML = '';
+                    project.deliverables.forEach(deliverable => {
+                        const tasks = partnerTasks.filter(t => t.projectId === project.id && t.deliverableId === deliverable.id);
+                        if (tasks.length > 0 || (currentFilter === 'all' && !currentTagFilter)) {
+                            deliverablesHTML += `<div class="deliverable-section ${tasks.length > 0 ? 'has-tasks' : ''}">
+                                <div class="deliverable-name">${deliverable.name}</div>
+                                <ul class="tasks-list">${tasks.map(t => renderTaskItem(t)).join('')}</ul>
+                            </div>`;
+                        }
+                    });
+                    if (deliverablesHTML) projectsHTML += `<div class="project-section"><div class="project-header">${project.name}</div>${deliverablesHTML}</div>`;
+                });
+                container.innerHTML += `<div class="partner-section ${partner.color}">
+                    <div class="partner-header">${partner.name}<span class="task-count">${incompleteTasks.length} tasks</span></div>
+                    ${projectsHTML || '<div class="empty-state">No tasks yet</div>'}
+                </div>`;
+            });
+        }
+
+        function renderTodayView() {
+            const incomplete = filterTasks(data.tasks.filter(t => !t.completed));
+            const overdue = incomplete.filter(t => isOverdue(t));
+            const high = incomplete.filter(t => t.priority === 'high' && !isOverdue(t));
+            const medium = incomplete.filter(t => t.priority === 'medium' && !isOverdue(t));
+            const low = incomplete.filter(t => t.priority === 'low' && !isOverdue(t));
+            document.getElementById('todayOverdue').innerHTML = overdue.length ? overdue.map(t => renderTaskItem(t, true)).join('') : '<div class="empty-state">Nothing overdue</div>';
+            document.getElementById('todayHigh').innerHTML = high.length ? high.map(t => renderTaskItem(t, true)).join('') : '<div class="empty-state">No urgent tasks</div>';
+            document.getElementById('todayMedium').innerHTML = medium.length ? medium.map(t => renderTaskItem(t, true)).join('') : '<div class="empty-state">—</div>';
+            document.getElementById('todayLow').innerHTML = low.length ? low.map(t => renderTaskItem(t, true)).join('') : '<div class="empty-state">—</div>';
+        }
+
+        function renderAllView() {
+            const tasks = filterTasks(data.tasks).sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                if (a.focus !== b.focus) return a.focus ? -1 : 1;
+                if (isOverdue(a) !== isOverdue(b)) return isOverdue(a) ? -1 : 1;
+                return { high: 0, medium: 1, low: 2 }[a.priority] - { high: 0, medium: 1, low: 2 }[b.priority];
+            });
+            document.getElementById('allTasksList').innerHTML = tasks.length ? tasks.map(t => renderTaskItem(t, true)).join('') : '<div class="empty-state">No tasks yet</div>';
+        }
+
+        function updateStats() {
+            const incomplete = data.tasks.filter(t => !t.completed);
+            document.getElementById('totalTasks').textContent = incomplete.length;
+            document.getElementById('urgentTasks').textContent = incomplete.filter(t => t.priority === 'high').length;
+            document.getElementById('overdueTasks').textContent = incomplete.filter(t => isOverdue(t)).length;
+            const today = new Date().toDateString();
+            document.getElementById('completedToday').textContent = data.tasks.filter(t => t.completed && t.completedAt && new Date(t.completedAt).toDateString() === today).length;
+        }
+
+        function updateTagViewBanner() {
+            const banner = document.getElementById('tagViewBanner');
+            if (currentTagFilter) {
+                const tag = data.tags.find(t => t.id === currentTagFilter);
+                const count = filterTasks(data.tasks).filter(t => !t.completed).length;
+                document.getElementById('tagViewIcon').textContent = tag.icon;
+                document.getElementById('tagViewTitle').textContent = `${tag.name} Tasks`;
+                document.getElementById('tagViewCount').textContent = `${count} task${count !== 1 ? 's' : ''}`;
+                banner.style.display = 'block';
+            } else banner.style.display = 'none';
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('projectsView').style.display = view === 'projects' ? 'grid' : 'none';
+            document.getElementById('todayView').classList.toggle('active', view === 'today');
+            document.getElementById('allView').classList.toggle('active', view === 'all');
+            render();
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            render();
+        }
+
+        function setTagFilter(tagId) {
+            currentTagFilter = tagId || null;
+            document.getElementById('tagFilterSelect').value = tagId || '';
+            updateTagViewBanner();
+            render();
+        }
+
+        function clearTagFilter() { setTagFilter(null); }
+
+        function openModal() { document.getElementById('modalOverlay').classList.add('active'); renderStructureEditor(); renderTagsEditor(); renderTemplatesEditor(); }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+
+        function setModalTab(tab) {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById('projectsTab').style.display = tab === 'projects' ? 'block' : 'none';
+            document.getElementById('tagsTab').style.display = tab === 'tags' ? 'block' : 'none';
+            document.getElementById('templatesTab').style.display = tab === 'templates' ? 'block' : 'none';
+            document.getElementById('syncTab').style.display = tab === 'sync' ? 'block' : 'none';
+        }
+
+        function renderStructureEditor() {
+            let html = '';
+            data.partners.forEach(partner => {
+                html += `<div class="modal-section"><h3>${partner.name}</h3>
+                    ${partner.projects.map(project => `
+                        <div style="margin-left: 12px; margin-bottom: 12px;">
+                            <div class="structure-item"><span>📁 ${project.name}</span><button onclick="deleteProject('${partner.id}', '${project.id}')">×</button></div>
+                            ${project.deliverables.map(d => `<div class="structure-item" style="margin-left: 20px;"><span>📄 ${d.name}</span><button onclick="deleteDeliverable('${partner.id}', '${project.id}', '${d.id}')">×</button></div>`).join('')}
+                            <div class="add-inline" style="margin-left: 20px; margin-top: 8px;"><input type="text" id="newDel-${partner.id}-${project.id}" placeholder="New deliverable"><button onclick="addDeliverable('${partner.id}', '${project.id}')">+</button></div>
+                        </div>
+                    `).join('')}
+                    <div class="add-inline" style="margin-top: 8px;"><input type="text" id="newProj-${partner.id}" placeholder="New project"><button onclick="addProject('${partner.id}')">+</button></div>
+                </div>`;
+            });
+            html += `<div class="modal-section"><h3>Add New Partner</h3><div class="add-inline"><input type="text" id="newPartner" placeholder="Partner name"><button onclick="addPartner()">+</button></div></div>`;
+            document.getElementById('structureEditor').innerHTML = html;
+        }
+
+        function renderTagsEditor() {
+            document.getElementById('tagsEditor').innerHTML = data.tags.map(tag => 
+                `<div class="tag-item"><div class="tag-item-info"><span style="font-size: 1.2rem;">${tag.icon}</span><span>${tag.name}</span></div><button onclick="deleteTag('${tag.id}')">×</button></div>`
+            ).join('');
+        }
+
+        function renderTemplatesEditor() {
+            const container = document.getElementById('templatesEditor');
+            if (data.templates.length === 0) { container.innerHTML = '<div class="empty-state">No templates yet</div>'; return; }
+            container.innerHTML = data.templates.map(template => `
+                <div class="template-item" onclick="editTemplate('${template.id}')">
+                    <div class="template-item-info">
+                        <div class="template-item-name">${template.name}</div>
+                        <div class="template-item-count">${template.tasks.length} tasks</div>
+                    </div>
+                    <div class="template-item-actions">
+                        <button onclick="event.stopPropagation(); deleteTemplate('${template.id}')">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCreateTemplateModal() {
+            editingTemplateId = null;
+            document.getElementById('templateEditTitle').textContent = 'New Template';
+            document.getElementById('templateName').value = '';
+            document.getElementById('templateTasks').value = '';
+            document.getElementById('templateEditModal').classList.add('active');
+        }
+
+        function editTemplate(templateId) {
+            const template = data.templates.find(t => t.id === templateId);
+            if (!template) return;
+            editingTemplateId = templateId;
+            document.getElementById('templateEditTitle').textContent = 'Edit Template';
+            document.getElementById('templateName').value = template.name;
+            document.getElementById('templateTasks').value = template.tasks.map(t => t.text + (t.focus ? ' **' : '')).join('\n');
+            document.getElementById('templateEditModal').classList.add('active');
+        }
+
+        function closeTemplateEditModal() { document.getElementById('templateEditModal').classList.remove('active'); editingTemplateId = null; }
+
+        function saveTemplate() {
+            const name = document.getElementById('templateName').value.trim();
+            const tasksText = document.getElementById('templateTasks').value.trim();
+            if (!name || !tasksText) return;
+            const tasks = tasksText.split('\n').filter(line => line.trim()).map(line => {
+                const isFocus = line.trim().endsWith('**');
+                const text = line.trim().replace(/\*\*$/, '').trim();
+                return { text, focus: isFocus };
+            });
+            if (editingTemplateId) {
+                const template = data.templates.find(t => t.id === editingTemplateId);
+                if (template) { template.name = name; template.tasks = tasks; }
+            } else {
+                data.templates.push({ id: generateId(), name, tasks });
+            }
+            saveData(); closeTemplateEditModal(); renderTemplatesEditor();
+        }
+
+        function deleteTemplate(templateId) { data.templates = data.templates.filter(t => t.id !== templateId); saveData(); renderTemplatesEditor(); }
+
+        function openTemplateModal() {
+            selectedTemplateId = null;
+            populateProjectSelect();
+            renderTemplateSelectList();
+            document.getElementById('templatePreviewSection').style.display = 'none';
+            document.getElementById('applyTemplateModal').classList.add('active');
+        }
+
+        function closeApplyTemplateModal() { document.getElementById('applyTemplateModal').classList.remove('active'); selectedTemplateId = null; }
+
+        function renderTemplateSelectList() {
+            const container = document.getElementById('templateSelectList');
+            if (data.templates.length === 0) { container.innerHTML = '<div class="empty-state">No templates yet</div>'; return; }
+            container.innerHTML = data.templates.map(template => `
+                <div class="template-item" onclick="selectTemplate('${template.id}')">
+                    <div class="template-item-info">
+                        <div class="template-item-name">${template.name}</div>
+                        <div class="template-item-count">${template.tasks.length} tasks</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectTemplate(templateId) {
+            selectedTemplateId = templateId;
+            const template = data.templates.find(t => t.id === templateId);
+            document.querySelectorAll('#templateSelectList .template-item').forEach(el => el.style.background = '');
+            event.currentTarget.style.background = 'var(--yellow-cream)';
+            document.getElementById('templatePreviewSection').style.display = 'block';
+            document.getElementById('templatePreview').innerHTML = template.tasks.map(task => `
+                <div class="template-preview-item">
+                    <span>•</span>
+                    <span style="flex: 1;">${task.text}</span>
+                    ${task.focus ? '<span class="focus-badge">Focus</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function applySelectedTemplate() {
+            if (!selectedTemplateId) return alert('Please select a template');
+            const template = data.templates.find(t => t.id === selectedTemplateId);
+            const [partnerId, projectId, deliverableId] = document.getElementById('applyTemplateProject').value.split('|');
+            template.tasks.forEach(task => {
+                data.tasks.push({
+                    id: generateId(), text: task.text, partnerId, projectId, deliverableId,
+                    priority: 'medium', dueDate: null, tags: [], focus: task.focus, fromEmail: false,
+                    completed: false, createdAt: new Date().toISOString(), completedAt: null
+                });
+            });
+            saveData(); closeApplyTemplateModal(); render();
+        }
+
+        function addTag() {
+            const name = document.getElementById('newTagName').value.trim();
+            const icon = document.getElementById('newTagIcon').value.trim() || '🏷️';
+            if (!name) return;
+            data.tags.push({ id: generateId(), name, icon });
+            saveData(); renderTagsEditor(); populateTagSelects();
+            document.getElementById('newTagName').value = ''; document.getElementById('newTagIcon').value = '';
+        }
+
+        function deleteTag(tagId) {
+            data.tags = data.tags.filter(t => t.id !== tagId);
+            data.tasks.forEach(task => { if (task.tags) task.tags = task.tags.filter(t => t !== tagId); });
+            saveData(); renderTagsEditor(); populateTagSelects();
+            if (currentTagFilter === tagId) { currentTagFilter = null; updateTagViewBanner(); }
+            render();
+        }
+
+        function addPartner() {
+            const name = document.getElementById('newPartner').value.trim();
+            if (!name) return;
+            data.partners.push({ id: generateId(), name, color: 'haven', projects: [] });
+            saveData(); renderStructureEditor(); populateProjectSelect();
+            document.getElementById('newPartner').value = '';
+        }
+
+        function addProject(partnerId) {
+            const input = document.getElementById(`newProj-${partnerId}`);
+            const name = input.value.trim();
+            if (!name) return;
+            const partner = data.partners.find(p => p.id === partnerId);
+            if (partner) { partner.projects.push({ id: generateId(), name, deliverables: [] }); saveData(); renderStructureEditor(); populateProjectSelect(); }
+            input.value = '';
+        }
+
+        function addDeliverable(partnerId, projectId) {
+            const input = document.getElementById(`newDel-${partnerId}-${projectId}`);
+            const name = input.value.trim();
+            if (!name) return;
+            const partner = data.partners.find(p => p.id === partnerId);
+            const project = partner?.projects.find(p => p.id === projectId);
+            if (project) { project.deliverables.push({ id: generateId(), name }); saveData(); renderStructureEditor(); populateProjectSelect(); }
+            input.value = '';
+        }
+
+        function deleteProject(partnerId, projectId) {
+            const partner = data.partners.find(p => p.id === partnerId);
+            if (partner) {
+                partner.projects = partner.projects.filter(p => p.id !== projectId);
+                data.tasks = data.tasks.filter(t => !(t.partnerId === partnerId && t.projectId === projectId));
+                saveData(); renderStructureEditor(); populateProjectSelect(); render();
+            }
+        }
+
+        function deleteDeliverable(partnerId, projectId, deliverableId) {
+            const partner = data.partners.find(p => p.id === partnerId);
+            const project = partner?.projects.find(p => p.id === projectId);
+            if (project) {
+                project.deliverables = project.deliverables.filter(d => d.id !== deliverableId);
+                data.tasks = data.tasks.filter(t => !(t.partnerId === partnerId && t.projectId === projectId && t.deliverableId === deliverableId));
+                saveData(); renderStructureEditor(); populateProjectSelect(); render();
+            }
+        }
+
+        function render() {
+            if (currentView === 'projects') renderProjectsView();
+            else if (currentView === 'today') renderTodayView();
+            else renderAllView();
+            updateStats();
+        }
+
+        loadData(); populateProjectSelect(); populateTagSelects(); render();
+    </script>
+</body>
+</html>
