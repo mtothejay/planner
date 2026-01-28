@@ -1050,7 +1050,8 @@
                 <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
                 <button class="filter-btn" data-filter="high" onclick="setFilter('high')">Urgent</button>
                 <button class="filter-btn" data-filter="incomplete" onclick="setFilter('incomplete')">Active</button>
-                <button class="filter-btn" data-filter="focus" onclick="setFilter('focus')">Focus</button>
+                <button class="filter-btn" data-filter="focus" onclick="setFilter('focus')">⭐ Focus</button>
+                <button class="filter-btn" data-filter="email" onclick="setFilter('email')">📥 From Inbox</button>
                 <select class="tag-filter-select" id="tagFilterSelect" onchange="setTagFilter(this.value)">
                     <option value="">All Tags</option>
                 </select>
@@ -1225,13 +1226,19 @@
                 <h3>Assign to</h3>
                 <select id="emailTaskProject"></select>
             </div>
-            <div class="modal-section">
-                <h3>Priority</h3>
-                <select id="emailTaskPriority">
-                    <option value="low">Low</option>
-                    <option value="medium" selected>Medium</option>
-                    <option value="high">Urgent</option>
-                </select>
+            <div style="display: flex; gap: 16px;">
+                <div class="modal-section" style="flex: 1;">
+                    <h3>Priority</h3>
+                    <select id="emailTaskPriority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">Urgent</option>
+                    </select>
+                </div>
+                <div class="modal-section" style="flex: 1;">
+                    <h3>Tag (optional)</h3>
+                    <select id="emailTaskTag"></select>
+                </div>
             </div>
             <input type="hidden" id="convertingEmailId">
             <div class="modal-actions">
@@ -1270,7 +1277,8 @@
                 { id: 'call', name: 'Call', icon: '📞' },
                 { id: 'review', name: 'Review', icon: '👀' },
                 { id: 'meeting', name: 'Meeting', icon: '🤝' },
-                { id: 'writing', name: 'Writing', icon: '✍️' }
+                { id: 'writing', name: 'Writing', icon: '✍️' },
+                { id: 'quickwin', name: 'Quick Win', icon: '⚡' }
             ],
             templates: [
                 {
@@ -1408,6 +1416,8 @@
             
             document.getElementById('emailTaskTitle').value = email.subject;
             document.getElementById('convertingEmailId').value = emailId;
+            
+            // Populate project selector
             const select = document.getElementById('emailTaskProject');
             select.innerHTML = '';
             data.partners.forEach(partner => {
@@ -1417,6 +1427,14 @@
                     });
                 });
             });
+            
+            // Populate tag selector
+            const tagSelect = document.getElementById('emailTaskTag');
+            tagSelect.innerHTML = '<option value="">No tag</option>';
+            data.tags.forEach(tag => {
+                tagSelect.innerHTML += `<option value="${tag.id}">${tag.icon} ${tag.name}</option>`;
+            });
+            
             document.getElementById('convertEmailModal').classList.add('active');
         }
 
@@ -1427,10 +1445,11 @@
             const title = document.getElementById('emailTaskTitle').value.trim();
             const [partnerId, projectId, deliverableId] = document.getElementById('emailTaskProject').value.split('|');
             const priority = document.getElementById('emailTaskPriority').value;
+            const selectedTag = document.getElementById('emailTaskTag').value;
             if (!title) return;
             data.tasks.push({
                 id: generateId(), text: title, partnerId, projectId, deliverableId, priority,
-                dueDate: null, tags: [], focus: false, fromEmail: true,
+                dueDate: null, tags: selectedTag ? [selectedTag] : [], focus: false, fromEmail: true,
                 completed: false, createdAt: new Date().toISOString(), completedAt: null
             });
             data.pendingEmails = data.pendingEmails.filter(e => e.id !== emailId);
@@ -1529,6 +1548,7 @@
                 if (currentFilter === 'high') passes = task.priority === 'high' && !task.completed;
                 else if (currentFilter === 'incomplete') passes = !task.completed;
                 else if (currentFilter === 'focus') passes = task.focus && !task.completed;
+                else if (currentFilter === 'email') passes = task.fromEmail && !task.completed;
                 if (currentTagFilter) passes = passes && task.tags?.includes(currentTagFilter);
                 return passes;
             });
