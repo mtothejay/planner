@@ -359,8 +359,12 @@ async function initFirebase(){
   try{
     firebase.initializeApp({apiKey:config.apiKey,authDomain:config.projectId+'.firebaseapp.com',databaseURL:'https://'+config.projectId+'-default-rtdb.firebaseio.com',projectId:config.projectId,appId:config.appId});
     setSyncStatus('syncing','Connecting...');
+    // Use a deterministic userId derived from appId so all devices share the same data path
+    var hash=0;for(var i=0;i<config.appId.length;i++){hash=((hash<<5)-hash)+config.appId.charCodeAt(i);hash|=0}
+    userId='mj'+Math.abs(hash).toString(36);
     firebase.auth().onAuthStateChanged(async function(user){
-      if(user){userId=user.uid;localStorage.setItem('mjPlanner_firebase_uid',userId);db=firebase.database();firebaseReady=true;
+      if(user){
+        localStorage.setItem('mjPlanner_firebase_uid',userId);db=firebase.database();firebaseReady=true;
         await loadDataFirebase();initApp();listenForUpdates();setSyncStatus('synced','Synced');
         firebase.database().ref('.info/connected').on('value',function(s){setSyncStatus(s.val()?'synced':'offline',s.val()?'Synced':'Offline')});
       }
